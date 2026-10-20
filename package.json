@@ -13,6 +13,8 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:concurrency": "vitest run tests/concurrency",
+    "bench": "tsx bench/run-benchmarks.ts",
+    "demo": "tsx scripts/demo.ts",
     "migrate": "tsx src/migrate.ts"
   },
   "keywords": [],

@@ -150,7 +150,10 @@ async function main() {
   app.log.info(`RateGuard listening on ${env.HOST}:${env.PORT}`);
 }
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+import { fileURLToPath } from 'node:url';
+
+const isDirectExecution = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isDirectExecution && process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   main().catch((err) => {
     console.error('Fatal error:', err);
     process.exit(1);

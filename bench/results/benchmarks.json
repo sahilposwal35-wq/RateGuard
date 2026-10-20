@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpus": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "cpuCores": 12,
+    "totalMemoryGb": 14.8,
+    "nodeVersion": "v22.22.1",
+    "date": "2026-10-20T02:53:44.769Z"
+  },
+  "benchmarks": {
+    "decision_latency": {
+      "token_bucket": {
+        "p50": 1.53,
+        "p95": 2.69,
+        "p99": 3.48,
+        "avg": 1.65,
+        "throughput": 606,
+        "iterations": 2000
+      },
+      "fixed_window": {
+        "p50": 1.23,
+        "p95": 2,
+        "p99": 2.65,
+        "avg": 1.25,
+        "throughput": 801,
+        "iterations": 2000
+      },
+      "sliding_window": {
+        "p50": 1.15,
+        "p95": 1.99,
+        "p99": 3.38,
+        "avg": 1.63,
+        "throughput": 614,
+        "iterations": 2000
+      }
+    },
+    "redis_calls": {
+      "token_bucket": 1,
+      "fixed_window": 1,
+      "sliding_window": 1,
+      "sliding_window_log": 1,
+      "note": "Atomic Lua scripts guarantee exactly 1 Redis round-trip per decision step"
+    },
+    "memory_per_key": {
+      "token_bucket": {
+        "bytesPerClient": 125,
+        "totalMemoryMb": 11.9
+      },
+      "fixed_window": {
+        "bytesPerClient": 113,
+        "totalMemoryMb": 10.8
+      },
+      "sliding_window": {
+        "bytesPerClient": 121,
+        "totalMemoryMb": 11.5
+      }
+    },
+    "accuracy": {
+      "totalRequests": 300,
+      "exactLogAllowed": 50,
+      "slidingCounterAllowed": 50,
+      "absoluteDifference": 0,
+      "errorPercentage": 0
+    },
+    "quota_comparison": {
+      "exact": {
+        "p50": 2.61,
+        "p95": 4.1,
+        "p99": 4.98,
+        "avg": 2.7,
+        "throughput": 371,
+        "iterations": 1000,
+        "storage": "PostgreSQL (durable row update)",
+        "overAdmission": 0
+      },
+      "writeBehind": {
+        "p50": 0.31,
+        "p95": 1.12,
+        "p99": 1.62,
+        "avg": 0.46,
+        "throughput": 2174,
+        "iterations": 1000,
+        "storage": "Redis counter with asynchronous PostgreSQL flusher",
+        "documentedLossWindow": "Un-flushed increments lost during unexpected Redis crash"
+      }
+    },
+    "instance_scaling": {
+      "1_instance": {
+        "throughput": 1820,
+        "durationMs": 824
+      },
+      "2_instances": {
+        "throughput": 2564,
+        "durationMs": 585
+      },
+      "3_instances": {
+        "throughput": 2963,
+        "durationMs": 506
+      }
+    },
+    "failure_behaviour": {
+      "timeToDetectFailureMs": 4.72,
+      "detectionStatus": "degraded",
+      "timeToRecoverMs": 1.41,
+      "recoveryStatus": "ok"
+    }
+  }
+}
