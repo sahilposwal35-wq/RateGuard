@@ -1,1 +1,0 @@
-/home/elliot-23/Desktop/Backendprojects/node_modules/@embedded-postgres/linux-x64/native/bin/postgres "-D" "./data/pg" "-p" "5432"
