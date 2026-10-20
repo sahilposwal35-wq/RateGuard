@@ -1,4 +1,7 @@
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
+import path from 'node:path';
+import fs from 'node:fs';
 import { loadEnv } from './config/env.js';
 import { getPool, runMigrations, closePool } from './config/database.js';
 import { getRedis, closeRedis } from './config/redis.js';
@@ -68,6 +71,19 @@ export async function buildApp() {
     const buffer = getDecisionsBuffer();
     return reply.send(buffer.getAll());
   });
+
+  // Register static console files
+  const consoleDistPath = path.resolve(process.cwd(), 'dist/console');
+  if (fs.existsSync(consoleDistPath)) {
+    await app.register(fastifyStatic, {
+      root: consoleDistPath,
+      prefix: '/console/',
+    });
+
+    app.get('/console', async (_request, reply) => {
+      return reply.redirect('/console/');
+    });
+  }
 
   // Health endpoint
   app.get('/healthz', async (_request, reply) => {

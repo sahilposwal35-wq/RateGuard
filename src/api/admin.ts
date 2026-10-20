@@ -367,8 +367,26 @@ export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get('/admin/v1/bypass', async (_request, reply) => {
-    const result = await pool.query("SELECT value FROM settings WHERE key = 'bypass'");
-    const bypass = result.rows.length > 0 ? result.rows[0].value === 'true' : false;
-    return reply.send({ bypass });
+    const [bypassResult, versionResult] = await Promise.all([
+      pool.query("SELECT value FROM settings WHERE key = 'bypass'"),
+      pool.query("SELECT version FROM config_version WHERE id = 1"),
+    ]);
+    const bypass = bypassResult.rows.length > 0 ? bypassResult.rows[0].value === 'true' : false;
+    const config_version = versionResult.rows.length > 0 ? Number(versionResult.rows[0].version) : 1;
+    return reply.send({ bypass, config_version });
+  });
+
+  app.get('/admin/v1/settings', async (_request, reply) => {
+    const [bypassResult, versionResult] = await Promise.all([
+      pool.query("SELECT value FROM settings WHERE key = 'bypass'"),
+      pool.query("SELECT version FROM config_version WHERE id = 1"),
+    ]);
+    const bypass = bypassResult.rows.length > 0 ? bypassResult.rows[0].value === 'true' : false;
+    const config_version = versionResult.rows.length > 0 ? Number(versionResult.rows[0].version) : 1;
+    return reply.send({
+      bypass,
+      config_version,
+      poll_interval_ms: 1000,
+    });
   });
 }

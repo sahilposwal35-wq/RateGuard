@@ -215,6 +215,7 @@ export async function registerCheckRoute(app: FastifyInstance): Promise<void> {
         limitUnits: policy.limitUnits,
         windowSeconds: policy.windowSeconds,
         burst: policy.burst,
+        failMode: policy.failMode,
       },
     });
 

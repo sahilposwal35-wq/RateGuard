@@ -5,7 +5,8 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:console",
+    "build:console": "mkdir -p dist/console && esbuild console/src/main.ts --bundle --outfile=dist/console/bundle.js --format=esm && esbuild console/src/styles.css --bundle --outfile=dist/console/bundle.css --loader:.woff2=file --loader:.woff=file && cp console/index.html dist/console/index.html",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "test": "vitest run",
@@ -13,6 +14,7 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:concurrency": "vitest run tests/concurrency",
+    "test:e2e": "playwright test",
     "bench": "tsx bench/run-benchmarks.ts",
     "demo": "tsx scripts/demo.ts",
     "migrate": "tsx src/migrate.ts"
@@ -22,6 +24,8 @@
   "license": "ISC",
   "dependencies": {
     "@fastify/static": "^10.1.6",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
     "fastify": "^5.12.7",
     "ioredis": "^6.0.0",
     "pg": "^8.23.1",
@@ -29,6 +33,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
     "embedded-postgres": "^18.4.0-beta.17",

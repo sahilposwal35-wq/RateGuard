@@ -11,9 +11,15 @@ async function main() {
   });
   
   console.log('Starting embedded PostgreSQL...');
-  await pg.initialise();
+  try {
+    await pg.initialise();
+  } catch (err) {
+    console.log('Database already initialized, starting existing instance...');
+  }
   await pg.start();
-  await pg.createDatabase('rateguard');
+  try {
+    await pg.createDatabase('rateguard');
+  } catch {}
   console.log('PostgreSQL ready on port 5432');
   console.log('Connection: postgres://rateguard:rateguard@localhost:5432/rateguard');
   

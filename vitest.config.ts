@@ -9,5 +9,6 @@ export default defineConfig({
       concurrent: false,
     },
     fileParallelism: false,
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
   },
 });
