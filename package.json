@@ -17,6 +17,7 @@
     "test:e2e": "playwright test",
     "bench": "tsx bench/run-benchmarks.ts",
     "demo": "tsx scripts/demo.ts",
+    "console": "tsx scripts/live-console.ts",
     "migrate": "tsx src/migrate.ts"
   },
   "keywords": [],
