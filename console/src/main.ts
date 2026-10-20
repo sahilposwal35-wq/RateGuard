@@ -17,7 +17,7 @@ function setupAppShell(): void {
     <div class="app-layout">
       <!-- Left Sidebar Navigation -->
       <aside class="sidebar" id="app-sidebar" style="display: none;">
-        <div class="sidebar-brand">
+        <div class="sidebar-header sidebar-brand">
           <div class="brand-title">RateGuard</div>
           <div class="brand-subtitle">Admin console</div>
         </div>
@@ -38,7 +38,7 @@ function setupAppShell(): void {
       </aside>
 
       <!-- Main Content Area -->
-      <main class="main-container">
+      <main class="main-content main-container">
         <div id="view-content"></div>
       </main>
     </div>

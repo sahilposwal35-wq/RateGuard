@@ -61,19 +61,31 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 #app {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+}
+
+.app-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-page);
 }
 
 .sidebar {
-  width: 220px;
+  width: 240px;
   background-color: var(--bg-surface);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
 }
 
-.sidebar-header {
-  padding: 24px 16px 16px 16px;
+.sidebar-header, .sidebar-brand {
+  padding: 24px 20px 16px 20px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -93,11 +105,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .sidebar-nav {
   padding: 16px 0;
   flex: 1;
+  overflow-y: auto;
 }
 
 .nav-item {
   display: block;
-  padding: 8px 16px;
+  padding: 10px 20px;
   color: var(--text-secondary);
   text-decoration: none;
   border-left: 3px solid transparent;
@@ -118,35 +131,43 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 }
 
 .sidebar-footer {
-  padding: 16px;
+  padding: 16px 20px;
   border-top: 1px solid var(--border-color);
   font-size: 13px;
   color: var(--text-secondary);
 }
 
-.main-content {
+.main-content, .main-container {
   flex: 1;
-  padding: 32px;
-  max-width: 1120px;
-  margin: 0 auto;
+  padding: 32px 48px;
   width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+#view-content {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
-  .main-content {
-    padding: 24px 16px;
+  .main-content, .main-container {
+    padding: 24px 20px;
   }
   .sidebar {
-    width: 190px;
+    width: 200px;
   }
 }
 
 @media (max-width: 768px) {
-  #app {
+  .app-layout {
     flex-direction: column;
   }
   .sidebar {
     width: 100%;
+    height: auto;
+    position: static;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
