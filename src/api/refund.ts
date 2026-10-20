@@ -4,6 +4,7 @@ import { resolveIdentity } from '../identity/resolver.js';
 import { resolvePolicy } from '../config/snapshot.js';
 import { getAlgorithm } from '../algorithms/registry.js';
 import { getMetrics } from '../observability/metrics.js';
+import { verifyServiceToken } from './auth.js';
 
 const refundSchema = z.object({
   api_key: z.string().min(1),
@@ -13,6 +14,9 @@ const refundSchema = z.object({
 
 export async function registerRefundRoute(app: FastifyInstance): Promise<void> {
   app.post('/v1/refund', async (request, reply) => {
+    await verifyServiceToken(request, reply);
+    if (reply.sent) return;
+
     const body = refundSchema.parse(request.body);
 
     const identityResult = await resolveIdentity(body.api_key);

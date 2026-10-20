@@ -99,7 +99,7 @@ export async function buildApp() {
     }
 
     const status = !healthy ? 'error' : degraded ? 'degraded' : 'ok';
-    const code = healthy && !degraded ? 200 : 503;
+    const code = healthy ? 200 : 503;
     return reply.code(code).send({ status, checks, degraded });
   });
 

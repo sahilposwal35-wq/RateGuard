@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getPool } from '../config/database.js';
 import { generateApiKey, hashApiKey } from '../identity/keys.js';
+import { verifyAdminToken } from './auth.js';
 
 const createPlanSchema = z.object({
   name: z.string().min(1).max(100),
@@ -50,6 +51,13 @@ async function incrementConfigVersion(client: import('pg').PoolClient): Promise<
 
 export async function registerAdminRoutes(app: FastifyInstance): Promise<void> {
   const pool = getPool();
+
+  // Admin authentication (PID 17)
+  app.addHook('preHandler', async (request, reply) => {
+    if (request.url.startsWith('/admin/v1')) {
+      await verifyAdminToken(request, reply);
+    }
+  });
 
   // --- Plans ---
   app.post('/admin/v1/plans', async (request, reply) => {

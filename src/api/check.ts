@@ -7,6 +7,7 @@ import { getAlgorithm } from '../algorithms/registry.js';
 import { getMetrics } from '../observability/metrics.js';
 import { getDecisionsBuffer } from '../observability/decisions-buffer.js';
 import { processQuotaCheck } from '../quota/manager.js';
+import { verifyServiceToken } from './auth.js';
 
 const checkSchema = z.object({
   api_key: z.string().min(1),
@@ -33,7 +34,10 @@ export async function registerCheckRoute(app: FastifyInstance): Promise<void> {
   app.post('/v1/check', async (request, reply) => {
     const startTime = performance.now();
 
-    // Step 1: Auth (service token) - will be enforced in Phase 6, pass-through for now
+    // Step 1: Authenticate caller with service token (PID 13.1 step 1, 17)
+    await verifyServiceToken(request, reply);
+    if (reply.sent) return;
+
     // Step 2: Validate body
     let body: z.infer<typeof checkSchema>;
     try {

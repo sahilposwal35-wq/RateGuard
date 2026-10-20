@@ -2,11 +2,15 @@ import { FastifyInstance } from 'fastify';
 import { getPool } from '../config/database.js';
 import { getCurrentPeriodStartUtc, getExactUsage } from '../quota/exact.js';
 import { getWriteBehindUsage } from '../quota/write-behind.js';
+import { verifyServiceToken } from './auth.js';
 
 export async function registerUsageRoutes(app: FastifyInstance): Promise<void> {
   const pool = getPool();
 
   app.get('/v1/usage/:client_id', async (request, reply) => {
+    await verifyServiceToken(request, reply);
+    if (reply.sent) return;
+
     const { client_id } = request.params as { client_id: string };
     const clientId = parseInt(client_id, 10);
     if (isNaN(clientId)) {

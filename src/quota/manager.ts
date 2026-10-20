@@ -16,6 +16,7 @@ export interface QuotaCheckOptions {
     limitUnits: number;
     windowSeconds: number;
     burst: number | null;
+    failMode: 'open' | 'closed';
   };
 }
 
@@ -23,6 +24,8 @@ export async function processQuotaCheck(
   opts: QuotaCheckOptions
 ): Promise<{
   allowed: boolean;
+  reason?: string;
+  degraded?: boolean;
   refundedUnits?: number;
   quota: { limit: number; used: number; remaining: number } | null;
 }> {
@@ -34,10 +37,31 @@ export async function processQuotaCheck(
   const limit = opts.plan.quotaLimit;
   let result: QuotaResult;
 
-  if (opts.plan.quotaMode === 'write_behind') {
-    result = await checkAndConsumeWriteBehind(opts.clientId, opts.cost, limit);
-  } else {
-    result = await checkAndConsumeExact(opts.clientId, opts.cost, limit);
+  try {
+    if (opts.plan.quotaMode === 'write_behind') {
+      result = await checkAndConsumeWriteBehind(opts.clientId, opts.cost, limit);
+    } else {
+      result = await checkAndConsumeExact(opts.clientId, opts.cost, limit);
+    }
+  } catch (err) {
+    // Dependency failure: apply quota fail_mode (PID 13.1 step 7)
+    getMetrics().incrementDegraded();
+    console.error('Quota dependency error, applying fail_mode:', err);
+
+    if (opts.policy.failMode === 'open') {
+      return {
+        allowed: true,
+        degraded: true,
+        quota: null,
+      };
+    } else {
+      return {
+        allowed: false,
+        reason: 'limiter_unavailable',
+        degraded: true,
+        quota: null,
+      };
+    }
   }
 
   if (!result.allowed) {
@@ -60,6 +84,7 @@ export async function processQuotaCheck(
 
     return {
       allowed: false,
+      reason: 'quota_exceeded',
       refundedUnits,
       quota: {
         limit: result.limit,
