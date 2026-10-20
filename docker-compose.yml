@@ -1,0 +1,51 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rateguard
+      POSTGRES_USER: rateguard
+      POSTGRES_PASSWORD: rateguard
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rateguard"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgres://rateguard:rateguard@postgres:5432/rateguard
+      SERVICE_TOKEN: test-service-token
+      ADMIN_TOKEN: test-admin-token
+      CONFIG_POLL_INTERVAL_MS: "3000"
+      FLUSHER_INTERVAL_MS: "5000"
+      LOG_LEVEL: info
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
