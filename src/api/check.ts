@@ -6,6 +6,7 @@ import { resolveIdentity } from '../identity/resolver.js';
 import { getAlgorithm } from '../algorithms/registry.js';
 import { getMetrics } from '../observability/metrics.js';
 import { getDecisionsBuffer } from '../observability/decisions-buffer.js';
+import { processQuotaCheck } from '../quota/manager.js';
 
 const checkSchema = z.object({
   api_key: z.string().min(1),
@@ -196,8 +197,45 @@ export async function registerCheckRoute(app: FastifyInstance): Promise<void> {
       return reply.send(response);
     }
 
-    // Step 7: Quota check (will be implemented in Phase 5)
-    let quotaInfo: { limit: number; used: number; remaining: number } | null = null;
+    // Step 7: Quota check
+    const quotaCheck = await processQuotaCheck({
+      clientId: identity.clientId,
+      cost: body.cost,
+      plan: {
+        quotaLimit: identity.quotaLimit,
+        quotaMode: identity.quotaMode as 'exact' | 'write_behind',
+      },
+      rateLimitKey: clientRouteKey,
+      policy: {
+        algorithm: policy.algorithm,
+        limitUnits: policy.limitUnits,
+        windowSeconds: policy.windowSeconds,
+        burst: policy.burst,
+      },
+    });
+
+    if (!quotaCheck.allowed) {
+      const refunded = quotaCheck.refundedUnits ?? 0;
+      let response: CheckResponse = {
+        allowed: false,
+        reason: 'quota_exceeded',
+        policy_id: policy.id,
+        limit: rateResult.limit,
+        remaining: Math.min(rateResult.limit, rateResult.remaining + refunded),
+        retry_after_ms: 0,
+        reset_ms: rateResult.resetMs,
+        quota: quotaCheck.quota,
+        degraded,
+        shadow: false,
+      };
+
+      if (policy.shadow) {
+        response = { ...response, allowed: true, shadow: true };
+      }
+
+      recordDecision(response, startTime, identity.clientId, identity.clientName, body.route, body.cost, policy);
+      return reply.send(response);
+    }
 
     // Step 8: Build success response
     let response: CheckResponse = {
@@ -208,7 +246,7 @@ export async function registerCheckRoute(app: FastifyInstance): Promise<void> {
       remaining: rateResult.remaining,
       retry_after_ms: 0,
       reset_ms: rateResult.resetMs,
-      quota: quotaInfo,
+      quota: quotaCheck.quota,
       degraded,
       shadow: false,
     };

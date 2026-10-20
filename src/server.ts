@@ -6,6 +6,8 @@ import { loadSnapshot, startConfigPoller, stopConfigPoller } from './config/snap
 import { registerAdminRoutes } from './api/admin.js';
 import { registerCheckRoute } from './api/check.js';
 import { registerRefundRoute } from './api/refund.js';
+import { registerUsageRoutes } from './api/usage.js';
+import { startQuotaFlusher, stopQuotaFlusher } from './quota/flusher.js';
 import { getMetrics } from './observability/metrics.js';
 import { getDecisionsBuffer } from './observability/decisions-buffer.js';
 
@@ -59,6 +61,7 @@ export async function buildApp() {
   await registerAdminRoutes(app);
   await registerCheckRoute(app);
   await registerRefundRoute(app);
+  await registerUsageRoutes(app);
 
   // Decisions buffer endpoint (scope change SC-001)
   app.get('/admin/v1/decisions', async (_request, reply) => {
@@ -124,12 +127,16 @@ async function main() {
   await loadSnapshot();
   await startConfigPoller(env.CONFIG_POLL_INTERVAL_MS);
 
+  // Start background quota flusher (PID 13.4)
+  startQuotaFlusher(env.FLUSHER_INTERVAL_MS);
+
   // Build and start the app
   const app = await buildApp();
 
   const shutdown = async () => {
     app.log.info('Shutting down...');
     stopConfigPoller();
+    stopQuotaFlusher();
     await app.close();
     await closeRedis();
     await closePool();
